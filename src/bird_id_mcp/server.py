@@ -36,7 +36,7 @@ def _get_pipeline() -> BirdPipeline:
             taxonomy = tax_data.get("species", tax_data)
         _pipeline = BirdPipeline(
             yolo_path=paths["yolo.onnx"],
-            cls_path=paths["convnext.onnx"],
+            cls_path=paths["cls.onnx"],
             labels=labels,
             labels_cn=labels_cn,
             taxonomy=taxonomy,

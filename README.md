@@ -13,7 +13,20 @@ pip install git+https://github.com/Hakureirm/bird-id-mcp.git
 bird-id-mcp
 ```
 
-Models are automatically downloaded from HuggingFace on first run (~150MB).
+Models are automatically downloaded from HuggingFace on first run (~50MB default).
+
+## Model Selection
+
+| Model | Size | Speed (x86 1T) | Accuracy |
+|-------|------|-----------------|----------|
+| **S1v2** (default) | 37MB | ~150ms | Good |
+| ConvNeXt | 144MB | ~600ms | Best |
+
+Default is S1v2 (fast + small). To use ConvNeXt:
+
+```bash
+BIRD_ID_CLS_MODEL=convnext uvx --from git+https://github.com/Hakureirm/bird-id-mcp.git bird-id-mcp
+```
 
 ## Claude Desktop / Agent Config
 
@@ -53,5 +66,6 @@ Same as above but accepts base64-encoded image data.
 ## Models
 
 - **Detection**: YOLOv8 bird detector (12MB ONNX)
-- **Classification**: ConvNeXt-Tiny fine-tuned on 10,753 bird species (138MB ONNX)
-- **Inference**: ONNX Runtime CPU, single-thread ~300ms on x86
+- **Classification**: S1v2 (37MB, default) or ConvNeXt-Tiny (144MB), 10,753 bird species
+- **Taxonomy**: eBird species info — scientific name, family, order, description
+- **Inference**: ONNX Runtime CPU only, no GPU required
