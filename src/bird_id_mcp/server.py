@@ -22,6 +22,7 @@ _pipeline: BirdPipeline | None = None
 def _get_pipeline() -> BirdPipeline:
     global _pipeline
     if _pipeline is None:
+        import json as _json
         paths = ensure_models()
         labels = [l.strip() for l in open(paths["labels.txt"], encoding="utf-8")]
         labels_cn = []
@@ -29,11 +30,16 @@ def _get_pipeline() -> BirdPipeline:
             for line in open(paths["labels_cn.txt"], encoding="utf-8"):
                 parts = line.strip().split("\t")
                 labels_cn.append(parts[1] if len(parts) > 1 else parts[0])
+        taxonomy = {}
+        if paths["taxonomy.json"].exists():
+            tax_data = _json.load(open(paths["taxonomy.json"], encoding="utf-8"))
+            taxonomy = tax_data.get("species", tax_data)
         _pipeline = BirdPipeline(
             yolo_path=paths["yolo.onnx"],
             cls_path=paths["convnext.onnx"],
             labels=labels,
             labels_cn=labels_cn,
+            taxonomy=taxonomy,
             threads=1,
         )
     return _pipeline

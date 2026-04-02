@@ -14,6 +14,7 @@ FILES = {
     "convnext.onnx": "convnext_bird_cls.onnx",
     "labels.txt": "labels_10753.txt",
     "labels_cn.txt": "labels_cn_10753.txt",
+    "taxonomy.json": "taxonomy.json",
 }
 
 

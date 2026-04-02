@@ -12,6 +12,7 @@ class BirdPipeline:
 
     def __init__(self, yolo_path: str | Path, cls_path: str | Path,
                  labels: list[str], labels_cn: list[str] | None = None,
+                 taxonomy: dict | None = None,
                  threads: int = 1):
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = threads
@@ -22,6 +23,7 @@ class BirdPipeline:
         self.cls = ort.InferenceSession(str(cls_path), opts, providers=["CPUExecutionProvider"])
         self.labels = labels
         self.labels_cn = labels_cn or [""] * len(labels)
+        self.taxonomy = taxonomy or {}  # species_name → {scientific_name, genus, family, order, description, ...}
 
         self._det_input = self.det.get_inputs()[0].name
         self._cls_input = self.cls.get_inputs()[0].name
@@ -112,15 +114,26 @@ class BirdPipeline:
         probs = e / e.sum()
         top_idx = probs.argsort()[::-1][:topk]
 
-        return [
-            {
+        results = []
+        for i, idx in enumerate(top_idx):
+            name = self.labels[idx]
+            info = self.taxonomy.get(name, {})
+            entry = {
                 "rank": i + 1,
-                "species": self.labels[idx],
+                "species": name,
                 "species_cn": self.labels_cn[idx] if idx < len(self.labels_cn) else "",
                 "confidence": round(float(probs[idx]) * 100, 2),
             }
-            for i, idx in enumerate(top_idx)
-        ]
+            if info:
+                entry.update({
+                    "scientific_name": info.get("scientific_name", ""),
+                    "genus": info.get("genus", ""),
+                    "family": info.get("family", ""),
+                    "order": info.get("order", ""),
+                    "description": info.get("description", ""),
+                })
+            results.append(entry)
+        return results
 
     def identify(self, image_path: str, topk: int = 5) -> dict:
         """Full pipeline: load image → detect → crop → classify → top-k."""
